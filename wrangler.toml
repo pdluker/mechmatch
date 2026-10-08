@@ -1,0 +1,43 @@
+# wrangler.toml.example
+#
+# Rename to wrangler.toml and fill in the two TODO values before
+# `wrangler dev` or `wrangler deploy`. Everything else is already
+# correct against your live account (bucket name verified via
+# r2_buckets_list, matches the mech-match-podcast bucket created
+# 2026-08-17).
+
+name = "mech-match"
+main = "src/worker.js"
+compatibility_date = "2026-08-17"
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "MECH_BUCKET"
+bucket_name = "mech-match-podcast"
+
+# TODO: pick a route/custom domain, or remove this block to use the
+# default workers.dev subdomain during initial testing.
+# [[routes]]
+# pattern = "mechmatch.yourdomain.com/*"
+# zone_name = "yourdomain.com"
+
+[triggers]
+# ASSUMPTION: daily at 12:00 UTC. No cadence was ever specified beyond
+# "daily" - adjust to whatever local-morning time makes sense once this
+# is live; this is a one-line change, not a structural decision.
+crons = ["0 12 * * 1"]
+
+[vars]
+# Non-secret config. The narrator voice ID is NOT a secret, but it also
+# isn't chosen yet - a real ElevenLabs voice needs to be picked from
+# their voice library before this has a real value.
+NARRATOR_VOICE_ID = "GV6neorn9sFfYdJMG5Gq"
+# Optional - leave blank to disable the fallback-voice retry path.
+NARRATOR_FALLBACK_VOICE_ID = "8Jm2cHR724F8mdsXLHW5"
+SUPABASE_URL = "https://baknyepgyjurarojdkhy.supabase.co"
+
+# Secrets - set via `wrangler secret put <NAME>`, never written here:
+#   ELEVENLABS_API_KEY          - your ElevenLabs account (blocked on you)
+#   SUPABASE_SERVICE_ROLE_KEY   - from Supabase project settings > API

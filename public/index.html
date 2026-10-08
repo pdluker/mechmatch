@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mech Match: The Sync Wars — A Daily Battle</title>
+<meta name="description" content="Every day, two pilots. One duel. Real stakes for the factions of the Sync Wars. A generated daily mecha-battle broadcast.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE3CE;
+    --paper-dim:#E2D5B8;
+    --ink:#1A1410;
+    --ink-soft:#3A322A;
+    --signal:#C1441E;
+    --gold:#D9A441;
+    --teal:#1F4A4A;
+    --line:#C9B98F;
+
+    --f-ashguard:#C1441E;
+    --f-skyline:#3E6FA8;
+    --f-tidewrought:#1F6B6B;
+    --f-wraithline:#7A4FA0;
+    --f-ironroot:#3C5F3A;
+    --f-aurelian:#B8901E;
+    --f-static:#2B6CB0;
+    --f-thornback:#8B5A2B;
+
+    --display: 'Anton', sans-serif;
+    --body: 'Source Serif 4', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    line-height:1.5;
+  }
+  a{ color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+
+  .halftone{
+    background-image:radial-gradient(var(--ink) 0.6px, transparent 0.6px);
+    background-size:6px 6px;
+    opacity:0.06;
+    position:absolute; inset:0;
+    pointer-events:none;
+  }
+
+  /* ---------------- Nav ---------------- */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px;
+    background:var(--ink);
+    border-bottom:3px solid var(--gold);
+  }
+  .nav .word{
+    font-family:var(--display);
+    color:var(--paper);
+    font-size:22px;
+    letter-spacing:1px;
+    text-decoration:none;
+  }
+  .nav .word span{ color:var(--gold); }
+  .nav ul{
+    list-style:none; display:flex; gap:26px; margin:0; padding:0;
+  }
+  .nav ul a{
+    text-decoration:none; color:var(--paper-dim);
+    font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding-bottom:3px; border-bottom:2px solid transparent;
+    transition:border-color .15s, color .15s;
+  }
+  .nav ul a:hover{ color:var(--gold); border-color:var(--gold); }
+  .nav-links{ display:flex; align-items:center; gap:26px; }
+  .btn-subscribe{
+    font-family:var(--mono); font-size:12px; letter-spacing:1px;
+    text-transform:uppercase; text-decoration:none;
+    color:var(--ink); background:var(--gold);
+    padding:9px 16px; border-radius:2px;
+    font-weight:700;
+  }
+  .nav-toggle{ display:none; }
+
+  /* ---------------- Hero / dispatch board ---------------- */
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:64px 28px 56px;
+    text-align:center;
+    border-bottom:3px solid var(--ink);
+  }
+  .hero .eyebrow{
+    position:relative; z-index:1;
+    font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    text-transform:uppercase; color:var(--signal);
+    margin-bottom:14px;
+  }
+  .hero .eyebrow::before{ content:"● "; }
+  .hero h1{
+    position:relative; z-index:1;
+    font-family:var(--display);
+    font-size:clamp(48px, 9vw, 110px);
+    line-height:0.92;
+    margin:0;
+    letter-spacing:1px;
+    color:var(--ink);
+  }
+  .hero h1 .sub{
+    display:block;
+    font-size:clamp(16px, 2.6vw, 26px);
+    letter-spacing:6px;
+    color:var(--signal);
+    margin-top:10px;
+  }
+  .hero p.tag{
+    position:relative; z-index:1;
+    max-width:560px; margin:20px auto 0;
+    font-size:17px; color:var(--ink-soft);
+  }
+
+  .matchup{
+    position:relative; z-index:1;
+    max-width:720px; margin:44px auto 0;
+    background:var(--paper);
+    border:3px solid var(--ink);
+    box-shadow:8px 8px 0 var(--ink);
+    padding:26px 22px;
+  }
+  .matchup .label{
+    font-family:var(--mono); font-size:11px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--ink-soft); margin-bottom:16px;
+  }
+  .matchup-grid{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px;
+  }
+  .fighter{ text-align:center; }
+  .fighter .mech{ width:64px; height:64px; margin:0 auto 8px; }
+  .fighter .name{ font-family:var(--display); font-size:20px; letter-spacing:0.5px; }
+  .fighter .faction{ font-family:var(--mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-top:4px; opacity:0.75; }
+  .vs{ font-family:var(--display); font-size:26px; color:var(--signal); }
+
+  .btn-listen{
+    position:relative; z-index:1;
+    display:inline-flex; align-items:center; gap:10px;
+    margin-top:28px;
+    background:var(--signal); color:var(--paper);
+    font-family:var(--display); font-size:18px; letter-spacing:1px;
+    padding:16px 30px;
+    border:3px solid var(--ink);
+    text-decoration:none;
+    box-shadow:5px 5px 0 var(--ink);
+    transition:transform .1s;
+  }
+  .btn-listen:hover{ transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--ink); }
+  .btn-listen::before{ content:"▶"; font-size:14px; }
+
+  .hero .meta{
+    position:relative; z-index:1;
+    font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+    letter-spacing:1px; margin-top:16px;
+  }
+
+  /* ---------------- Ticker ---------------- */
+  .ticker-band{
+    background:var(--ink); color:var(--gold);
+    overflow:hidden; white-space:nowrap;
+    border-bottom:3px solid var(--gold);
+    padding:10px 0;
+  }
+  .ticker-band .tag{
+    display:inline-block; font-family:var(--mono);
+    background:var(--signal); color:var(--paper);
+    font-size:11px; letter-spacing:1px; padding:2px 8px; margin-right:10px;
+    vertical-align:middle;
+  }
+  .ticker-track{
+    display:inline-block;
+    animation:scroll-left 38s linear infinite;
+    font-family:var(--mono); font-size:13px; letter-spacing:0.5px;
+  }
+  .ticker-track span.item{ margin-right:48px; }
+  @keyframes scroll-left{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticker-track{ animation:none; }
+  }
+
+  /* ---------------- Sections ---------------- */
+  section{ padding:56px 28px; max-width:1080px; margin:0 auto; }
+  .section-head{
+    display:flex; align-items:baseline; gap:14px; margin-bottom:28px;
+    border-bottom:3px solid var(--ink); padding-bottom:12px;
+  }
+  .section-head .num{ font-family:var(--mono); font-size:13px; color:var(--signal); }
+  .section-head h2{
+    font-family:var(--display); font-size:clamp(26px,4vw,38px);
+    margin:0; letter-spacing:0.5px;
+  }
+
+  /* Today's broadcast */
+  .broadcast-card{
+    background:var(--paper); border:3px solid var(--ink);
+    box-shadow:8px 8px 0 var(--ink);
+    padding:32px;
+    display:grid; grid-template-columns:1fr 1fr; gap:32px;
+  }
+  .broadcast-card .synopsis h3{
+    font-family:var(--display); font-size:24px; margin:0 0 12px; letter-spacing:0.5px;
+  }
+  .broadcast-card .synopsis p{ color:var(--ink-soft); margin:0 0 18px; }
+  .badge-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .badge{
+    font-family:var(--mono); font-size:10px; letter-spacing:1px; text-transform:uppercase;
+    padding:4px 9px; border:1.5px solid var(--ink); background:var(--paper-dim);
+  }
+  .badge.blowout{ background:var(--signal); color:var(--paper); border-color:var(--signal); }
+  .badge.narrow{ background:var(--gold); border-color:var(--gold); }
+  .link-arrow{ font-family:var(--mono); font-size:12px; text-decoration:none; color:var(--signal); font-weight:700; }
+  audio{ width:100%; margin-top:6px; }
+  .player-frame{ border:1.5px solid var(--line); padding:14px; background:#fff; }
+  .player-frame .label{ font-family:var(--mono); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+
+  @media (max-width: 760px){ .broadcast-card{ grid-template-columns:1fr; } }
+
+  /* Recent list */
+  .ep-row{
+    display:grid; grid-template-columns:70px 1fr auto; gap:18px; align-items:center;
+    padding:16px 0; border-bottom:1.5px solid var(--line);
+  }
+  .ep-row:first-child{ padding-top:0; }
+  .ep-num{ font-family:var(--mono); font-size:13px; color:var(--ink-soft); }
+  .ep-num strong{ display:block; font-family:var(--display); font-size:20px; color:var(--ink); }
+  .ep-main .matchline{ font-family:var(--display); font-size:19px; letter-spacing:0.3px; }
+  .ep-main .matchline .chip{
+    display:inline-block; width:9px; height:9px; border-radius:50%;
+    margin-right:5px; vertical-align:middle;
+  }
+  .ep-main .sub{ font-family:var(--mono); font-size:11px; color:var(--ink-soft); letter-spacing:0.5px; margin-top:4px; }
+  .ep-play{
+    font-family:var(--mono); font-size:11px; text-decoration:none; color:var(--ink);
+    border:1.5px solid var(--ink); padding:8px 12px; white-space:nowrap;
+  }
+  .ep-play:hover{ background:var(--ink); color:var(--paper); }
+
+  /* Faction war board — signature element */
+  .warboard{
+    background:var(--ink); color:var(--paper);
+    padding:32px; border:3px solid var(--gold);
+  }
+  .warboard .section-head{ border-color:var(--gold); }
+  .warboard .section-head h2{ color:var(--paper); }
+  .warboard .section-head .note{ font-family:var(--mono); font-size:11px; color:var(--paper-dim); margin-left:auto; }
+  .war-row{ display:grid; grid-template-columns:170px 1fr 60px; align-items:center; gap:14px; margin-bottom:12px; }
+  .war-row .fname{ font-family:var(--mono); font-size:12px; letter-spacing:0.5px; }
+  .war-bar-track{ background:rgba(255,255,255,0.08); height:14px; position:relative; }
+  .war-bar-fill{ height:100%; }
+  .war-row .pct{ font-family:var(--mono); font-size:12px; text-align:right; color:var(--gold); }
+
+  /* Subscribe CTA */
+  .cta{ text-align:center; padding:64px 28px; background:var(--paper-dim); border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); }
+  .cta h2{ font-family:var(--display); font-size:clamp(28px,5vw,44px); margin:0 0 10px; }
+  .cta p{ color:var(--ink-soft); margin:0 0 26px; }
+  .subscribe-links{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .subscribe-links a{
+    font-family:var(--mono); font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    text-decoration:none; border:2px solid var(--ink); padding:11px 18px; color:var(--ink);
+  }
+  .subscribe-links a:hover{ background:var(--ink); color:var(--paper); }
+
+  /* Footer */
+  footer{ padding:44px 28px 30px; }
+  .foot-grid{
+    max-width:1080px; margin:0 auto;
+    display:grid; grid-template-columns:2fr 1fr 1fr; gap:32px;
+  }
+  .foot-grid .word{ font-family:var(--display); font-size:22px; }
+  .foot-grid .word span{ color:var(--signal); }
+  .foot-grid p{ color:var(--ink-soft); font-size:14px; max-width:320px; }
+  footer h4{ font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin:0 0 12px; }
+  footer ul{ list-style:none; margin:0; padding:0; }
+  footer li{ margin-bottom:8px; }
+  footer a{ text-decoration:none; font-size:14px; }
+  footer a:hover{ color:var(--signal); }
+  .legend{ display:flex; flex-wrap:wrap; gap:10px; max-width:1080px; margin:32px auto 0; }
+  .legend .chip-label{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:10px; letter-spacing:0.5px; color:var(--ink-soft); }
+  .legend .dot{ width:8px; height:8px; border-radius:50%; }
+  .copyright{ text-align:center; font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:36px; }
+
+  @media (max-width: 700px){
+    .nav ul{ display:none; }
+    .foot-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a class="word" href="#top">MECH<span>MATCH</span></a>
+  <div class="nav-links">
+    <ul>
+      <li><a href="#today">Today</a></li>
+      <li><a href="#recent">Recent</a></li>
+      <li><a href="#warboard">Standings</a></li>
+      <li><a href="#subscribe">Roster</a></li>
+    </ul>
+    <a class="btn-subscribe" href="#subscribe">Subscribe</a>
+  </div>
+</div>
+
+<div class="hero" id="top">
+  <div class="halftone"></div>
+  <div class="eyebrow">Live — today's broadcast</div>
+  <h1>MECH MATCH<span class="sub">The Sync Wars</span></h1>
+  <p class="tag">Every day, two pilots step into the ring. The world's future and their faction's standing ride on it. A new duel, generated fresh, every single day.</p>
+
+  <div class="matchup" id="matchup-card">
+    <div class="label">Today's Matchup</div>
+    <div class="matchup-grid">
+      <div class="fighter">
+        <svg class="mech" viewBox="0 0 64 64" fill="none" id="mech-a">
+          <rect x="20" y="8" width="24" height="18" rx="3" fill="currentColor"/>
+          <rect x="14" y="26" width="36" height="24" rx="3" fill="currentColor"/>
+          <rect x="6" y="30" width="10" height="16" rx="2" fill="currentColor"/>
+          <rect x="48" y="30" width="10" height="16" rx="2" fill="currentColor"/>
+          <rect x="18" y="50" width="10" height="12" fill="currentColor"/>
+          <rect x="36" y="50" width="10" height="12" fill="currentColor"/>
+        </svg>
+        <div class="name" id="pilot-a-name">Bram Ashgrave</div>
+        <div class="faction" id="pilot-a-faction">Ashguard Combine</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="fighter">
+        <svg class="mech" viewBox="0 0 64 64" fill="none" id="mech-b">
+          <circle cx="32" cy="16" r="11" fill="currentColor"/>
+          <path d="M14 30 L50 30 L44 58 L20 58 Z" fill="currentColor"/>
+          <rect x="2" y="32" width="10" height="20" rx="2" fill="currentColor"/>
+          <rect x="52" y="32" width="10" height="20" rx="2" fill="currentColor"/>
+        </svg>
+        <div class="name" id="pilot-b-name">Wren Kite</div>
+        <div class="faction" id="pilot-b-faction">Thornback Cartel</div>
+      </div>
+    </div>
+  </div>
+
+  <a class="btn-listen" href="#today">Listen to Today's Broadcast</a>
+  <div class="meta" id="hero-meta">Episode 47 — Arc 1, Day 47 — 6 min</div>
+</div>
+
+<div class="ticker-band">
+  <div class="ticker-track" id="ticker-track">
+    <!-- populated by JS; duplicated once for seamless loop -->
+  </div>
+</div>
+
+<section id="today">
+  <div class="section-head">
+    <span class="num">01</span>
+    <h2>Today's Broadcast</h2>
+  </div>
+  <div class="broadcast-card">
+    <div class="player-side">
+      <div class="player-frame">
+        <div class="label">Now Playing</div>
+        <audio controls id="audio-player">
+          <source id="audio-source" src="" type="audio/mpeg">
+          Your browser doesn't support inline audio — use the download link below.
+        </audio>
+      </div>
+    </div>
+    <div class="synopsis">
+      <div class="badge-row" id="today-badges">
+        <span class="badge">Attrition</span>
+      </div>
+      <h3 id="today-title">A grinding win, decided on the last exchange</h3>
+      <p id="today-desc">Bram Ashgrave and Wren Kite squared off at the edge of the Foundry Belt. Neither pilot found a clean opening — the fight came down to who could still stand after the last hit landed.</p>
+      <a class="link-arrow" href="#" id="today-log-link">Read the full battle log →</a>
+    </div>
+  </div>
+</section>
+
+<section id="recent">
+  <div class="section-head">
+    <span class="num">02</span>
+    <h2>Recent Broadcasts</h2>
+  </div>
+  <div id="recent-list">
+    <!-- populated by JS; static fallback rows below render if JS fetch fails -->
+  </div>
+</section>
+
+<section id="warboard">
+  <div class="warboard">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Faction War Board</h2>
+      <span class="note">Standings update after every broadcast</span>
+    </div>
+    <div id="war-rows"></div>
+  </div>
+</section>
+
+<div class="cta" id="subscribe">
+  <h2>Get today's duel, every day.</h2>
+  <p>New broadcast every morning. Same two questions each time: who fights, and who's still standing.</p>
+  <div class="subscribe-links">
+    <a href="#">Apple Podcasts</a>
+    <a href="#">Spotify</a>
+    <a href="/feed.xml">RSS Feed</a>
+    <a href="#">All Platforms</a>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <a class="word" href="#top">MECH<span>MATCH</span></a>
+      <p>A daily-generated mecha battle broadcast. Eight factions, a rotating roster of pilots, and one duel decided fresh every day.</p>
+    </div>
+    <div>
+      <h4>Broadcast</h4>
+      <ul>
+        <li><a href="#today">Today</a></li>
+        <li><a href="#recent">Recent</a></li>
+        <li><a href="#warboard">Standings</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Listen</h4>
+      <ul>
+        <li><a href="#">Apple Podcasts</a></li>
+        <li><a href="#">Spotify</a></li>
+        <li><a href="/feed.xml">RSS</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legend" id="faction-legend"></div>
+  <div class="copyright">MECH MATCH: THE SYNC WARS — a generated daily broadcast</div>
+</footer>
+
+<script>
+/* ------------------------------------------------------------------
+   Wiring notes, read before deploying this file for real:
+
+   1. SUPABASE_ANON_KEY below is a placeholder. mech_matches already
+      has RLS enabled with a public SELECT-only policy (confirmed live
+      2026-08-17), so this page CAN query it directly client-side once
+      a real anon key is filled in - no backend proxy needed for match
+      history. Get the anon key from Supabase project settings > API
+      (NOT the service_role key - that one stays a Worker secret only).
+
+   2. Audio playback (AUDIO_BASE_URL) has no real value yet - R2
+      buckets aren't publicly reachable by URL without either (a) a
+      custom domain / public access enabled on the mech-match-podcast
+      bucket in the Cloudflare dashboard, or (b) worker.js gaining an
+      R2-object-serving route the way pokepod's serveR2Object does.
+      Neither exists yet - this is a real gap, not an oversight.
+
+   3. Until both are wired, this page shows the embedded SAMPLE_DATA
+      below so the design has something real to render against. It is
+      placeholder content, not live episodes.
+------------------------------------------------------------------ */
+
+const SUPABASE_URL = "https://baknyepgyjurarojdkhy.supabase.co";
+const SUPABASE_ANON_KEY = "REPLACE_WITH_SUPABASE_ANON_KEY"; // public-safe, but still not filled in yet
+const AUDIO_BASE_URL = "REPLACE_WITH_R2_PUBLIC_BASE_URL"; // e.g. https://mechmash-audio.stluker.com
+
+const FACTION_COLORS = {
+  "Ashguard Combine": "#C1441E",
+  "Skyline Concord": "#3E6FA8",
+  "Tidewrought Assembly": "#1F6B6B",
+  "Wraithline Circuit": "#7A4FA0",
+  "Ironroot Concord": "#3C5F3A",
+  "Aurelian Accord": "#B8901E",
+  "Static Vanguard": "#2B6CB0",
+  "Thornback Cartel": "#8B5A2B"
+};
+
+// Placeholder data shaped exactly like a real mech_matches row plus
+// the pilot-name/faction lookups the ledger already carries - swap
+// this out once SUPABASE_ANON_KEY is real.
+const SAMPLE_DATA = {
+  today: {
+    episode: 47, arc_number: 1,
+    pilotA: "Bram Ashgrave", factionA: "Ashguard Combine",
+    pilotB: "Wren Kite", factionB: "Thornback Cartel",
+    winner: "Bram Ashgrave",
+    decisive_factor: "attrition", blowout: false, narrow_win: false
+  },
+  recent: [
+    { episode: 46, pilotA: "Isla Vane", factionA: "Wraithline Circuit", pilotB: "Osei Thorn", factionB: "Aurelian Accord", winner: "Isla Vane", decisive_factor: "sync", blowout: false, narrow_win: true },
+    { episode: 45, pilotA: "Cato Aurel", factionA: "Skyline Concord", pilotB: "Rin Vosch", factionB: "Thornback Cartel", winner: "Rin Vosch", decisive_factor: "critical-hits", blowout: true, narrow_win: false },
+    { episode: 44, pilotA: "Juno Marchetti", factionA: "Ironroot Concord", pilotB: "Dex Oyelaran", factionB: "Static Vanguard", winner: "Dex Oyelaran", decisive_factor: "core-effectiveness", blowout: false, narrow_win: false },
+    { episode: 43, pilotA: "Wren Kite", factionA: "Thornback Cartel", pilotB: "Bram Ashgrave", factionB: "Ashguard Combine", winner: "Wren Kite", decisive_factor: "attrition", blowout: false, narrow_win: true }
+  ],
+  factionWins: {
+    "Ashguard Combine": 7, "Skyline Concord": 5, "Tidewrought Assembly": 4,
+    "Wraithline Circuit": 6, "Ironroot Concord": 3, "Aurelian Accord": 5,
+    "Static Vanguard": 8, "Thornback Cartel": 6
+  }
+};
+
+function factionDot(faction){
+  return `<span class="chip" style="background:${FACTION_COLORS[faction] || '#999'}"></span>`;
+}
+
+function decisiveLabel(f){
+  return ({ "core-effectiveness":"Core Matchup", "sync":"Sync Gap", "critical-hits":"Critical Hit", "attrition":"Attrition" })[f] || f;
+}
+
+function renderTicker(recent, today){
+  const items = [today, ...recent].map(m => {
+    const tag = m.blowout ? "BLOWOUT" : m.narrow_win ? "NARROW WIN" : decisiveLabel(m.decisive_factor).toUpperCase();
+    return `<span class="item"><span class="tag">EP ${String(m.episode).padStart(3,'0')}</span>${m.winner} defeats ${m.pilotA === m.winner ? m.pilotB : m.pilotA} — ${tag}</span>`;
+  }).join("");
+  document.getElementById("ticker-track").innerHTML = items + items; // duplicated for seamless loop
+}
+
+function renderToday(m){
+  document.getElementById("pilot-a-name").textContent = m.pilotA;
+  document.getElementById("pilot-a-faction").textContent = m.factionA;
+  document.getElementById("pilot-b-name").textContent = m.pilotB;
+  document.getElementById("pilot-b-faction").textContent = m.factionB;
+  document.getElementById("mech-a").style.color = FACTION_COLORS[m.factionA] || "#1A1410";
+  document.getElementById("mech-b").style.color = FACTION_COLORS[m.factionB] || "#1A1410";
+  document.getElementById("hero-meta").textContent = `Episode ${m.episode} — Arc ${m.arc_number} — 6 min`;
+
+  const badges = document.getElementById("today-badges");
+  badges.innerHTML = `<span class="badge">${decisiveLabel(m.decisive_factor)}</span>` +
+    (m.blowout ? `<span class="badge blowout">Blowout</span>` : "") +
+    (m.narrow_win ? `<span class="badge narrow">Narrow Win</span>` : "");
+
+  document.getElementById("today-title").textContent = `${m.winner} takes it — ${decisiveLabel(m.decisive_factor)}`;
+  document.getElementById("today-desc").textContent =
+    `${m.pilotA} (${m.factionA}) and ${m.pilotB} (${m.factionB}) faced off today. ${m.winner} came out on top, decided by ${decisiveLabel(m.decisive_factor).toLowerCase()}.`;
+
+  if (AUDIO_BASE_URL && !AUDIO_BASE_URL.startsWith("REPLACE")) {
+    document.getElementById("audio-source").src = `${AUDIO_BASE_URL}/episodes/${String(m.episode).padStart(5,'0')}.mp3`;
+    document.getElementById("audio-player").load();
+  }
+}
+
+function renderRecent(list){
+  document.getElementById("recent-list").innerHTML = list.map(m => `
+    <div class="ep-row">
+      <div class="ep-num"><strong>${String(m.episode).padStart(3,'0')}</strong>EP</div>
+      <div class="ep-main">
+        <div class="matchline">${factionDot(m.factionA)}${m.pilotA} <span style="color:var(--ink-soft)">vs</span> ${factionDot(m.factionB)}${m.pilotB}</div>
+        <div class="sub">${m.winner} wins — ${decisiveLabel(m.decisive_factor)}${m.blowout ? " · Blowout" : ""}${m.narrow_win ? " · Narrow win" : ""}</div>
+      </div>
+      <a class="ep-play" href="#">▶ Play</a>
+    </div>
+  `).join("");
+}
+
+function renderWarBoard(factionWins){
+  const max = Math.max(...Object.values(factionWins));
+  const rows = Object.entries(factionWins).sort((a,b) => b[1]-a[1]);
+  document.getElementById("war-rows").innerHTML = rows.map(([faction, wins]) => `
+    <div class="war-row">
+      <div class="fname">${factionDot(faction)}${faction}</div>
+      <div class="war-bar-track"><div class="war-bar-fill" style="width:${(wins/max*100).toFixed(0)}%; background:${FACTION_COLORS[faction]}"></div></div>
+      <div class="pct">${wins}W</div>
+    </div>
+  `).join("");
+}
+
+function renderLegend(){
+  document.getElementById("faction-legend").innerHTML = Object.entries(FACTION_COLORS).map(([name, color]) => `
+    <span class="chip-label"><span class="dot" style="background:${color}"></span>${name}</span>
+  `).join("");
+}
+
+async function fetchLiveData(){
+  if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.startsWith("REPLACE")) return null;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/mech_matches?select=*&order=episode.desc&limit=6`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn("Live Supabase fetch failed, using sample data:", err.message);
+    return null;
+  }
+}
+
+(async function init(){
+  // TODO once SUPABASE_ANON_KEY is real: map the raw mech_matches rows
+  // (winner_pilot_id etc - ids, not display names) through the roster
+  // to get display names/factions, the way index.js's ledger already
+  // does server-side. Rows alone aren't enough to render this page.
+  const live = await fetchLiveData();
+  const data = live || SAMPLE_DATA;
+
+  renderTicker(SAMPLE_DATA.recent, SAMPLE_DATA.today);
+  renderToday(SAMPLE_DATA.today);
+  renderRecent(SAMPLE_DATA.recent);
+  renderWarBoard(SAMPLE_DATA.factionWins);
+  renderLegend();
+})();
+</script>
+
+</body>
+</html>
