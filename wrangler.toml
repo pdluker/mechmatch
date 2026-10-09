@@ -24,10 +24,10 @@ bucket_name = "mech-match-podcast"
 # zone_name = "yourdomain.com"
 
 [triggers]
-# ASSUMPTION: daily at 12:00 UTC. No cadence was ever specified beyond
-# "daily" - adjust to whatever local-morning time makes sense once this
-# is live; this is a one-line change, not a structural decision.
-crons = ["0 12 * * 1"]
+# Weekly, Mondays 12:00 UTC (decided 2026-10-09). Day NAME on purpose:
+# Cloudflare cron weekdays are 1-7 with 1 = Sunday, so the old "1" fired
+# on Sundays.
+crons = ["0 12 * * MON"]
 
 [vars]
 # Non-secret config. The narrator voice ID is NOT a secret, but it also
